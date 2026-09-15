@@ -1,7 +1,5 @@
 import XCTest
 
-@testable import InfinitStreamerTests
-
 final class RotationPlanTests: XCTestCase {
     func testIntervalIs11Hours55Minutes() {
         XCTAssertEqual(RotationPlan().intervalSeconds, 42_900, accuracy: 0.001)

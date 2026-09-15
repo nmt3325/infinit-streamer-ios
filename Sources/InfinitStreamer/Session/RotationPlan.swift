@@ -11,6 +11,9 @@ struct RotationPlan: Equatable {
     /// 再試行の最大待ち時間。
     var maxBackoffSeconds: TimeInterval = 300
 
+    /// 配信タイトルの接頭辞。
+    var titlePrefix: String = "InfinitStreamer"
+
     func rotationDate(startedAt start: Date) -> Date {
         start.addingTimeInterval(intervalSeconds)
     }
@@ -26,10 +29,10 @@ struct RotationPlan: Equatable {
         return min(maxBackoffSeconds, exponential)
     }
 
-    func title(cycle: Int, date: Date, prefix: String = AppConfig.broadcastTitlePrefix) -> String {
+    func title(cycle: Int, date: Date, prefix: String? = nil) -> String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd HH:mm"
-        return "\(prefix) #\(cycle) — \(formatter.string(from: date))"
+        return "\(prefix ?? titlePrefix) #\(cycle) — \(formatter.string(from: date))"
     }
 }
