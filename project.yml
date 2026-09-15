@@ -1,0 +1,76 @@
+name: InfinitStreamer
+
+options:
+  bundleIdPrefix: com.infinitstreamer
+  createIntermediateGroups: true
+  deploymentTarget:
+    iOS: "16.0"
+
+packages:
+  HaishinKit:
+    url: https://github.com/shogo4405/HaishinKit.swift
+    exactVersion: 1.9.9
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    SWIFT_STRICT_CONCURRENCY: minimal
+
+targets:
+  InfinitStreamer:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources/InfinitStreamer
+    dependencies:
+      - package: HaishinKit
+        product: HaishinKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.infinitstreamer.ios
+        PRODUCT_NAME: InfinitStreamer
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        DEVELOPMENT_TEAM: ""
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: ""
+    info:
+      path: Support/Info.plist
+      properties:
+        CFBundleDisplayName: InfinitStreamer
+        UILaunchScreen: {}
+        UIBackgroundModes:
+          - audio
+        NSCameraUsageDescription: YouTube ライブへ映像を配信するためにカメラを使用します。
+        NSMicrophoneUsageDescription: YouTube ライブへ音声を配信するためにマイクを使用します。
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        GoogleOAuthClientID: YOUR_CLIENT_ID.apps.googleusercontent.com
+        CFBundleURLTypes:
+          - CFBundleURLName: googleoauth
+            CFBundleURLSchemes:
+              - com.googleusercontent.apps.YOUR_CLIENT_ID
+
+  InfinitStreamerTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests/InfinitStreamerTests
+      - path: Sources/InfinitStreamer/Session/RotationPlan.swift
+
+schemes:
+  InfinitStreamer:
+    build:
+      targets:
+        InfinitStreamer: all
+        InfinitStreamerTests: [test]
+    test:
+      targets:
+        - InfinitStreamerTests
+    run:
+      config: Debug
+    archive:
+      config: Release

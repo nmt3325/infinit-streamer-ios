@@ -1,0 +1,70 @@
+name: iOS Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build & Test (iOS)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain info
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build (iOS Simulator)
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project InfinitStreamer.xcodeproj \
+            -scheme InfinitStreamer \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Unit tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project InfinitStreamer.xcodeproj \
+            -scheme InfinitStreamer \
+            -configuration Debug \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Archive unsigned .ipa
+        run: |
+          set -o pipefail
+          xcodebuild archive \
+            -project InfinitStreamer.xcodeproj \
+            -scheme InfinitStreamer \
+            -configuration Release \
+            -sdk iphoneos \
+            -archivePath build/InfinitStreamer.xcarchive \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
+          mkdir -p build/Payload
+          cp -R build/InfinitStreamer.xcarchive/Products/Applications/InfinitStreamer.app build/Payload/
+          (cd build && zip -qry InfinitStreamer-unsigned.ipa Payload)
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: InfinitStreamer-unsigned-ipa
+          path: build/InfinitStreamer-unsigned.ipa
+          if-no-files-found: error
